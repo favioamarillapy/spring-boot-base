@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Mathias\",\r\n    \"apellido\": \"Amarilla\",\r\n    \"usuario\": \"mathiasamarillapy\",\r\n    \"password\": \"123456\",\r\n    \"rol\": \"ROLE_BACKOFFICE\"\r\n}",
+							"raw": "{\r\n    \"nombre\": \"Favio\",\r\n    \"apellido\": \"Amarilla\",\r\n    \"usuario\": \"favioamarillapy\",\r\n    \"password\": \"123456\",\r\n    \"rol\": \"ROLE_BACKOFFICE\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -161,7 +161,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/v1/usuarios?cantidad=10&pagina=0&orderBy=id&orderDir=desc&filtros=%7B%22nombre%22%3A%22mathias%22%7D",
+							"raw": "{{host}}/v1/usuarios?cantidad=10&pagina=0&orderBy=id&orderDir=desc&filtros=%7B%22nombre%22%3A%22favio%22%7D",
 							"host": [
 								"{{host}}"
 							],
@@ -188,7 +188,7 @@
 								},
 								{
 									"key": "filtros",
-									"value": "%7B%22nombre%22%3A%22mathias%22%7D"
+									"value": "%7B%22nombre%22%3A%22favio%22%7D"
 								}
 							]
 						}
@@ -253,7 +253,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Mathias\",\r\n    \"apellido\": \"Amarilla\",\r\n    \"usuario\": \"mathiasamarilla\",\r\n    \"password\": \"123456\",\r\n    \"rol\": \"ROLE_BACKOFFICE\"\r\n}",
+							"raw": "{\r\n    \"nombre\": \"asdasda\",\r\n    \"apellido\": \"asdasd\",\r\n    \"usuario\": \"asdasdasd\",\r\n    \"password\": \"123456\",\r\n    \"rol\": \"ROLE_BACKOFFICE\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
