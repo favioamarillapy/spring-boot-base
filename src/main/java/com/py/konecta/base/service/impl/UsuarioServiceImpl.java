@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.py.konecta.base.core.Mensajes;
 import com.py.konecta.base.dto.CustomResponse;
 import com.py.konecta.base.dto.PageDTO;
-import com.py.konecta.base.dto.UsuarioDTO;
 import com.py.konecta.base.entity.Usuario;
 import com.py.konecta.base.repository.UsuarioRepository;
 import com.py.konecta.base.service.UsuarioService;
@@ -14,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -44,8 +45,8 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
     }
 
     @Override
-    public CustomResponse<PageDTO<UsuarioDTO>> findAll(String filtros, int cantidad, int pagina, String orderBy,
-                                                       String orderDir) {
+    public CustomResponse<PageDTO<Usuario>> findAll(String filtros, int cantidad, int pagina, String orderBy,
+                                                    String orderDir) {
 
         log.info("Request {}: filtros[{}],cantidad[{}], pagina[{}], orderBy[{}], orderDir[{}]", getUsername(), filtros,
                 cantidad, pagina, orderBy, orderDir);
@@ -66,9 +67,12 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
             }
 
             Page<Usuario> page = usuarioRepository.findAll(specification, pageable);
+            List<Usuario> content = page.getContent().stream()
+                    .peek(record -> record.setPassword(null))
+                    .toList();
 
-            PageDTO<UsuarioDTO> data = new PageDTO<>();
-            data.setContent(page.getContent().stream().map(this::convertToDto).toList());
+            PageDTO<Usuario> data = new PageDTO<>();
+            data.setContent(content);
             data.setSize(page.getSize());
             data.setTotalPages(page.getTotalPages());
             data.setTotalElements(page.getTotalElements());
@@ -84,14 +88,14 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
     }
 
     @Override
-    public CustomResponse<UsuarioDTO> findById(Long id) {
+    public CustomResponse<Usuario> findById(Long id) {
         log.info("Request {}: id[{}]", getUsername(), id);
         try {
             var entity = usuarioRepository.findById(id)
                     .orElseThrow(() -> new Exception(Mensajes.REGISTRO_NO_ENCONTRADO));
-            var data = convertToDto(entity);
+            entity.setPassword(null);
 
-            var response = new CustomResponse<>(Mensajes.SUCCESS_GET, Boolean.FALSE, data);
+            var response = new CustomResponse<>(Mensajes.SUCCESS_GET, Boolean.FALSE, entity);
             log.info("Response {}: {}", getUsername(), response);
 
             return response;
@@ -102,7 +106,7 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
     }
 
     @Override
-    public CustomResponse<UsuarioDTO> create(UsuarioDTO body) {
+    public CustomResponse<Usuario> create(Usuario body) {
         log.info("Request: entity[{}]", body);
 
         try {
@@ -110,15 +114,14 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
                 throw new Exception("Ya existe el usuario " + body.getUsuario());
             }
 
-            var entity = convertToEntity(body);
-            entity.setPassword(passwordEncoder.encode(entity.getPassword()));
-            entity.setFechaCreacion(new Date());
-            entity = usuarioRepository.save(entity);
+            body.setActivo(Boolean.TRUE);
+            body.setPassword(passwordEncoder.encode(body.getPassword()));
+            body.setFechaCreacion(new Date());
+            body = usuarioRepository.save(body);
 
-            var data = convertToDto(entity);
-            data.setPassword(null);
+            body.setPassword(null);
 
-            var response = new CustomResponse<>(Mensajes.SUCCESS_SAVE, Boolean.FALSE, data);
+            var response = new CustomResponse<>(Mensajes.SUCCESS_SAVE, Boolean.FALSE, body);
             log.info("Response {}: {}", getUsername(), response);
 
             return response;
@@ -129,7 +132,7 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
     }
 
     @Override
-    public CustomResponse<UsuarioDTO> update(Long id, UsuarioDTO body) {
+    public CustomResponse<Usuario> update(Long id, Usuario body) {
         log.info("Request {}: id[{}], entity[{}]", getUsername(), id, body);
 
         try {
@@ -142,10 +145,7 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
                 }
             }
 
-            var entity = convertToEntity(body);
-            var data = convertToDto(usuarioRepository.save(entity));
-
-            var response = new CustomResponse<>(Mensajes.SUCCESS_SAVE, Boolean.FALSE, data);
+            var response = new CustomResponse<>(Mensajes.SUCCESS_SAVE, Boolean.FALSE, record);
             log.info("Response {}: {}", getUsername(), response);
 
             return response;
@@ -156,7 +156,7 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
     }
 
     @Override
-    public CustomResponse<UsuarioDTO> activar(Long id) {
+    public CustomResponse<Usuario> activar(Long id) {
         log.info("Request {}: id[{}]", getUsername(), id);
 
         try {
@@ -165,9 +165,7 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
             record.setActivo(Boolean.TRUE);
             record = usuarioRepository.save(record);
 
-            var data = convertToDto(record);
-
-            var response = new CustomResponse<>(Mensajes.SUCCESS_SAVE, Boolean.FALSE, data);
+            var response = new CustomResponse<>(Mensajes.SUCCESS_SAVE, Boolean.FALSE, record);
             log.info("Response {}: {}", getUsername(), response);
 
             return response;
@@ -178,7 +176,7 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
     }
 
     @Override
-    public CustomResponse<UsuarioDTO> desactivar(Long id) {
+    public CustomResponse<Usuario> desactivar(Long id) {
         log.info("Request {}: id[{}]", getUsername(), id);
 
         try {
@@ -187,9 +185,7 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
             record.setActivo(Boolean.FALSE);
             record = usuarioRepository.save(record);
 
-            var data = convertToDto(record);
-
-            var response = new CustomResponse<>(Mensajes.SUCCESS_SAVE, Boolean.FALSE, data);
+            var response = new CustomResponse<>(Mensajes.SUCCESS_SAVE, Boolean.FALSE, record);
             log.info("Response {}: {}", getUsername(), response);
 
             return response;
@@ -218,7 +214,7 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
     }
 
     @Override
-    public CustomResponse<UsuarioDTO> resetearPassword(Long id, UsuarioDTO body) {
+    public CustomResponse<Usuario> resetearPassword(Long id, Usuario body) {
         log.info("Request {}: id[{}], entity[{}]", getUsername(), id, body);
 
         try {
@@ -228,9 +224,7 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
             record.setPassword(passwordEncoder.encode(body.getPassword()));
             record = usuarioRepository.save(record);
 
-            var data = convertToDto(record);
-
-            var response = new CustomResponse<>(Mensajes.SUCCESS_DELETE, Boolean.FALSE, data);
+            var response = new CustomResponse<>(Mensajes.SUCCESS_DELETE, Boolean.FALSE, record);
             log.info("Response {}: {}", getUsername(), response);
 
             return response;
@@ -238,15 +232,5 @@ public class UsuarioServiceImpl extends GenericServiceImpl implements UsuarioSer
             log.error("Error {}: {}", getUsername(), e.getMessage(), e);
             return new CustomResponse<>(e.getMessage(), Boolean.TRUE, null);
         }
-    }
-
-    private UsuarioDTO convertToDto(Usuario entity) {
-        var data = mapper.map(entity, UsuarioDTO.class);
-        data.setPassword(null);
-        return data;
-    }
-
-    private Usuario convertToEntity(UsuarioDTO doctorDTO) {
-        return mapper.map(doctorDTO, Usuario.class);
     }
 }

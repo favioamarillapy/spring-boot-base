@@ -3,7 +3,6 @@ package com.py.konecta.base.service.impl;
 import com.py.konecta.base.dto.AuthenticationResponse;
 import com.py.konecta.base.dto.CustomResponse;
 import com.py.konecta.base.dto.LoginRequest;
-import com.py.konecta.base.dto.UsuarioDTO;
 import com.py.konecta.base.entity.Usuario;
 import com.py.konecta.base.repository.UsuarioRepository;
 import com.py.konecta.base.security.CustomAuthenticationManager;
@@ -45,9 +44,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         var jwt = jwtService.generateToken(record);
-        var data = convertToDto(record);
 
-        var authenticationResponse = new AuthenticationResponse(data, jwt);
+        var authenticationResponse = new AuthenticationResponse(record, jwt);
         var response = new CustomResponse<>("Acceso concedido", Boolean.FALSE, authenticationResponse);
 
         log.info("Response: {}", response);
@@ -63,11 +61,4 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return new CustomResponse<>(e.getMessage(), Boolean.FALSE, null);
         }
     }
-
-    private UsuarioDTO convertToDto(Usuario entity) {
-        var data = mapper.map(entity, UsuarioDTO.class);
-        data.setPassword(null);
-        return data;
-    }
-
 }

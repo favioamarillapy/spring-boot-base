@@ -3,7 +3,6 @@ package com.py.konecta.base.controller.v1;
 import com.py.konecta.base.dto.AuthenticationResponse;
 import com.py.konecta.base.dto.CustomResponse;
 import com.py.konecta.base.dto.LoginRequest;
-import com.py.konecta.base.dto.UsuarioDTO;
 import com.py.konecta.base.entity.Usuario;
 import com.py.konecta.base.service.AuthenticationService;
 import com.py.konecta.base.service.UsuarioService;
@@ -28,7 +27,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<CustomResponse<UsuarioDTO>> create(@RequestBody UsuarioDTO body) {
+    public ResponseEntity<CustomResponse<Usuario>> create(@RequestBody Usuario body) {
         var response = usuarioService.create(body);
         return ResponseEntity.ok(response);
     }
